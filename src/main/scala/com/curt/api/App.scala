@@ -272,7 +272,6 @@ object App {
 			}
 		}
 
-
 		/**
 		 * Route parameters
 		 *
