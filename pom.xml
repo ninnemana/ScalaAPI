@@ -34,7 +34,7 @@
     <repository>
           <id>project-local</id>
           <name>Project-local Repo</name>
-          <url>file:${project.basedir}/lib</url>
+          <url>file://${project.basedir}/lib</url>
       </repository>
   </repositories>
 
