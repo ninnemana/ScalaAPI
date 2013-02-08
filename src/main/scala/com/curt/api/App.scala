@@ -97,6 +97,9 @@ object App {
 			implicit val timeout = Timeout(5 seconds)
 			val future = vehicleActor ? "years"
 			val years = Await.result(future, timeout.duration).asInstanceOf[List[Int]]
+			
+			val parts = List[Int]()
+			val groups = List[Int]()
 			respondTo(request){
 				case _:Json => {
 					render.json(Map(
@@ -106,8 +109,8 @@ object App {
 									("Options", years))),
 							("ProductMatch",
 								Map(
-									("Parts", ""),
-									("Groups",""))))).toFuture
+									("Parts", parts),
+									("Groups", groups))))).toFuture
 				}
 				case _:All => {
 					render.json(Map(
@@ -117,8 +120,8 @@ object App {
 									("Options", years))),
 							("ProductMatch",
 								Map(
-									("Parts", ""),
-									("Groups",""))))).toFuture
+									("Parts", parts),
+									("Groups", groups))))).toFuture
 				}
 			}
 		}
@@ -141,6 +144,9 @@ object App {
 			implicit val timeout = Timeout(5 seconds)
 			val future = vehicleActor ? "makes"
 			val makes = Await.result(future,timeout.duration).asInstanceOf[List[String]]
+			
+			val parts = List[Int]()
+			val groups = List[Int]()
 			respondTo(request){
 				case _:Json => {
 					render.json(Map(
@@ -150,8 +156,8 @@ object App {
 									("Options", makes))),
 							("ProductMatch",
 								Map(
-									("Parts", ""),
-									("Groups",""))))).toFuture
+									("Parts", parts),
+									("Groups", groups))))).toFuture
 				}
 				case _:All => {
 					render.json(Map(
@@ -161,8 +167,8 @@ object App {
 									("Options", makes))),
 							("ProductMatch",
 								Map(
-									("Parts", ""),
-									("Groups",""))))).toFuture
+									("Parts", parts),
+									("Groups", groups))))).toFuture
 				}
 			}
 		}
@@ -188,6 +194,8 @@ object App {
 			val future = vehicleActor ? "models"
 			val models = Await.result(future,timeout.duration).asInstanceOf[List[String]]
 
+			val parts = List[Int]()
+			val groups = List[Int]()
 			respondTo(request){
 				case _:Json => {
 					render.json(Map(
@@ -197,8 +205,8 @@ object App {
 									("Options", models))),
 							("ProductMatch",
 								Map(
-									("Parts", ""),
-									("Groups",""))))).toFuture
+									("Parts", parts),
+									("Groups", groups))))).toFuture
 				}
 				case _:All => {
 					render.json(Map(
@@ -208,8 +216,8 @@ object App {
 									("Options", models))),
 							("ProductMatch",
 								Map(
-									("Parts", ""),
-									("Groups",""))))).toFuture
+									("Parts", parts),
+									("Groups", groups))))).toFuture
 				}
 			}
 		}
@@ -237,6 +245,8 @@ object App {
 			val future = vehicleActor ? "submodels"
 			val submodels = Await.result(future,timeout.duration).asInstanceOf[List[String]]
 			
+			val parts = List[Int]()
+			val groups = List[Int]()
 			respondTo(request){
 				case _:Json => {
 					render.json(Map(
@@ -246,8 +256,8 @@ object App {
 									("Options", submodels))),
 							("ProductMatch",
 								Map(
-									("Parts", ""),
-									("Groups",""))))).toFuture
+									("Parts", parts),
+									("Groups",groups))))).toFuture
 				}
 				case _:All => {
 					render.json(Map(
@@ -257,8 +267,8 @@ object App {
 									("Options", submodels))),
 							("ProductMatch",
 								Map(
-									("Parts", ""),
-									("Groups",""))))).toFuture
+									("Parts", parts),
+									("Groups", groups))))).toFuture
 				}
 			}
 		}
@@ -288,6 +298,8 @@ object App {
 			val future = vehicleActor ? "config"
 			val options = Await.result(future,timeout.duration).asInstanceOf[Tuple2[String,List[String]]]
 
+			val parts = List[Int]()
+			val groups = List[Int]()
 			respondTo(request){
 				case _:Json => {
 					render.json(Map(
@@ -297,8 +309,8 @@ object App {
 									("Options", options._2))),
 							("ProductMatch",
 								Map(
-									("Parts", ""),
-									("Groups",""))))).toFuture
+									("Parts", parts),
+									("Groups",groups))))).toFuture
 				}
 				case _:All => {
 					render.json(Map(
@@ -308,8 +320,8 @@ object App {
 									("Options", options._2))),
 							("ProductMatch",
 								Map(
-									("Parts", ""),
-									("Groups",""))))).toFuture
+									("Parts", parts),
+									("Groups", groups))))).toFuture
 				}
 			}
 		}
@@ -344,6 +356,8 @@ object App {
 			val future = vehicleActor ? "config"
 			val options = Await.result(future,timeout.duration).asInstanceOf[Tuple2[String,List[String]]]
 
+			val parts = List[Int]()
+			val groups = List[Int]()
 			respondTo(request){
 				case _:Json => {
 					render.json(Map(
@@ -353,8 +367,8 @@ object App {
 									("Options", options._2))),
 							("ProductMatch",
 								Map(
-									("Parts", ""),
-									("Groups",""))))).toFuture
+									("Parts", parts),
+									("Groups", groups))))).toFuture
 				}
 				case _:All => {
 					render.json(Map(
@@ -364,8 +378,8 @@ object App {
 									("Options", options._2))),
 							("ProductMatch",
 								Map(
-									("Parts", ""),
-									("Groups",""))))).toFuture
+									("Parts", parts),
+									("Groups", groups))))).toFuture
 				}
 			}
 		}
