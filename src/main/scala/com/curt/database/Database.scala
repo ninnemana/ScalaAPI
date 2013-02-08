@@ -7,6 +7,7 @@ import org.squeryl.{Session, SessionFactory,Schema, KeyedEntity, Query}
 import org.squeryl.adapters.MSSQLServer
 import com.curt.vehicle._
 
+
 trait Database {
 	val dbUsername = "discounthitch"
 	val dbPassword = "eC0mm3rc3"
@@ -23,6 +24,5 @@ trait Database {
 	cpds.setMaxPoolSize(100)
 
 	SessionFactory.concreteFactory = Some(() => Session.create(cpds.getConnection, new MSSQLServer))
-
+        
 }
-

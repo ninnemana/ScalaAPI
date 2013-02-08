@@ -5,10 +5,12 @@ import com.twitter.finatra.ContentType._
 import com.twitter.finagle.{Service, SimpleFilter}
 import com.twitter.finagle.http._
 import com.twitter.finagle.http.{Request, Response}
+import com.twitter.util.Future
 import scala.util.DynamicVariable
 import org.squeryl.{Session, SessionFactory}
 import com.curt.vehicle._
 import com.curt.database._
+import com.curt.access.Authorization
 import akka.actor._
 import akka.dispatch.Await
 import akka.dispatch.Future
@@ -33,6 +35,36 @@ object App {
 					dbSession.value.close
 					dbSession.value.unbindFromCurrentThread
 				}
+			}
+		}
+	}
+	
+	/**
+	 * A simple Filter that checks that the request is valid by inspecting the
+	 * "Authorization" header.
+	 */
+	class Authorize extends SimpleFilter[Request, Response] {
+		def apply(request: Request, continue: Service[Request, Response]) = {
+			try{
+				// Try and retrieve an API from the Query String
+				var key = Option(request.getParam("key", ""))
+				
+                key match {
+				  case None => {
+					  var auth_key = request.getHeader("Authorization")
+					  new Authorization(Option(auth_key))
+				  }
+				  case Some(key) => {
+					  new Authorization(Option(key))
+				  }
+                }
+				continue(request)
+				
+			} catch {
+			  case _ => {
+				  	val req = com.twitter.finagle.http.Request
+					continue(req.apply("/unauthorized"))
+			  }
 			}
 		}
 	}
@@ -390,11 +422,13 @@ object App {
 	}
 
 	val dbSession = new DatabaseSessionService
+	val authorized = new Authorize
 	val app = new Api
 
 	def main(args: Array[String]) = {
 		FinatraServer.register(app)
 		FinatraServer.addFilter(dbSession)
+		FinatraServer.addFilter(authorized)
 		FinatraServer.start()
 	}
 }

@@ -83,6 +83,12 @@
       <artifactId>sqljdbc4</artifactId>
       <version>4.0</version>
     </dependency>
+    
+    <dependency>
+        <groupId>org.scalaj</groupId>
+        <artifactId>scalaj-time_${scala.version}</artifactId>
+        <version>0.6</version>
+    </dependency>
 
   </dependencies>
 
