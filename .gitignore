@@ -7,3 +7,11 @@ release.properties
 .idea/*
 target
 target/*
+.cache
+.cache/*
+.classpath
+.classpath/*
+.project
+.project/*
+.settings
+.settings/*

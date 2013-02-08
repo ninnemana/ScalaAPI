@@ -37,17 +37,27 @@ object App {
 		}
 	}
   
+	
+	/*
+	 * The routing for the API is documented in the FINATRA.markdown file
+	 */
 	class Api extends Controller with Database {
 
-		/**
-		 * Basic Example
-		 *
-		 * curl http://localhost:7070/hello => "hello world"
+		/*
+		 * Site Root
 		 */
 		get("/") { request =>
 			render.plain("hello world").toFuture
 		}
 
+		/*
+		 * Return a list of years with an empty Array for
+		 * Parts and Groups (we're not going to find any for this)
+		 * curl http://localhost:7070/vehicle?key=[public key]
+		 * 
+		 * Method: GET
+		 * @param key (required) - Public API Key
+		 */
 		get("/vehicle"){ request =>
 			val system = ActorSystem("VehicleSystem")
 			val vehicleActor = system.actorOf(Props[Vehicle], name = "vehicleActor")
@@ -81,6 +91,16 @@ object App {
 			}
 		}
 
+		
+		/*
+		 * Return a list of makes with an empty Array for
+		 * Parts and Groups (we're not going to find any for this)
+		 * curl http://localhost:7070/vehicle/2012?key=[public key]
+		 * 
+		 * Method: GET
+		 * @param :year (required) - Year to retrieve makes for
+		 * @param key (required) - Public API Key
+		 */
 		get("/vehicle/:year"){ request =>
 			val year = request.routeParams.getOrElse("year","0").toInt
 			val system = ActorSystem("VehicleSystem")
@@ -115,6 +135,16 @@ object App {
 			}
 		}
 
+		/*
+		 * Return a list of models with an array of part IDs
+		 * and group IDs for this configuration.
+		 * curl http://localhost:7070/vehicle/2012/Audi?key=[public key]
+		 * 
+		 * Method: GET
+		 * @param :year (required) - Year to retrieve models for
+		 * @param :make (required) - Make to retrieve models for
+		 * @param key (required) - Public API Key
+		 */
 		get("/vehicle/:year/:make"){ request =>
 			val year = request.routeParams.getOrElse("year","0").toInt
 			val make = request.routeParams.getOrElse("make","")
@@ -152,6 +182,17 @@ object App {
 			}
 		}
 
+		/*
+		 * Return a list of sub-models with an array of part IDs
+		 * and group IDs for this configuration.
+		 * curl http://localhost:7070/vehicle/2012/Audi/A5?key=[public key]
+		 * 
+		 * Method: GET
+		 * @param :year (required) - Year to retrieve sub-models for
+		 * @param :make (required) - Make to retrieve sub-models for
+		 * @param :model (required) - Model to retrieve sub-models for
+		 * @param key (required) - Public API Key
+		 */
 		get("/vehicle/:year/:make/:model"){ request =>
 			val year = request.routeParams.getOrElse("year","0").toInt
 			val make = request.routeParams.getOrElse("make","")
@@ -190,6 +231,18 @@ object App {
 			}
 		}
 
+		/*
+		 * Return a list of configuration options with an array of part IDs
+		 * and group IDs for this configuration.
+		 * curl http://localhost:7070/vehicle/2012/Audi/A5/Cabriolet?key=[public key]
+		 * 
+		 * Method: GET
+		 * @param :year (required) - Year to retrieve configuration options for
+		 * @param :make (required) - Make to retrieve configuration options for
+		 * @param :model (required) - Model to retrieve configuration options for
+		 * @param :submodel (required) - Sub-Model to retrieve configuration options for
+		 * @param key (required) - Public API Key
+		 */
 		get("/vehicle/:year/:make/:model/:submodel"){ request =>
 			val year = request.routeParams.getOrElse("year","0").toInt
 			val make = request.routeParams.getOrElse("make","")
@@ -229,6 +282,19 @@ object App {
 			}
 		}
 
+		/*
+		 * Return a list of configuration options with an array of part IDs
+		 * and group IDs for this configuration.
+		 * curl http://localhost:7070/vehicle/2012/Audi/A5/Cabriolet/Coupe?key=[public key]
+		 * 
+		 * Method: GET
+		 * @param :year (required) - Year to retrieve configuration options for
+		 * @param :make (required) - Make to retrieve configuration options for
+		 * @param :model (required) - Model to retrieve configuration options for
+		 * @param :submodel (required) - Sub-Model to retrieve configuration options for
+		 * @param * "splat" (required) - Selected configuration iptions to retrieve further configuration options for
+		 * @param key (required) - Public API Key
+		 */
 		get("/vehicle/:year/:make/:model/:submodel/*"){ request =>
 			val year = request.routeParams.getOrElse("year","0").toInt
 			val make = request.routeParams.getOrElse("make","")
@@ -273,73 +339,7 @@ object App {
 		}
 
 
-		/**
-		 * Route parameters
-		 *
-		 * curl http://localhost:7070/user/dave => "hello dave"
-		 */
-		get("/user/:username") { request =>
-			val username = request.routeParams.getOrElse("username", "default_user")
-			render.plain("hello " + username).toFuture
-		}
-
-		/**
-		 * Setting Headers
-		 *
-		 * curl -I http://localhost:7070/headers => "Foo:Bar"
-		 */
-		get("/headers") { request =>
-			render.plain("look at headers").header("Foo", "Bar").toFuture
-		}
-
-		/**
-		 * Rendering json
-		 *
-		 * curl -I http://localhost:7070/headers => "Foo:Bar"
-		 */
-		get("/data.json") { request =>
-			render.json(Map("foo" -> "bar")).toFuture
-		}
-
-		/**
-		 * Query params
-		 *
-		 * curl http://localhost:7070/search?q=foo => "no results for foo"
-		 */
-		get("/search") { request =>
-			request.params.get("q") match {
-				case Some(q) => render.plain("no results for "+ q).toFuture
-				case None    => render.plain("query param q needed").status(500).toFuture
-			}
-		}
-
-		/**
-		 * Uploading files
-		 *
-		 * curl -F avatar=@/path/to/img http://localhost:7070/profile
-		 */
-		post("/profile") { request =>
-			request.multiParams.get("avatar").map { avatar =>
-				println("content type is " + avatar.contentType)
-				avatar.writeToFile("/tmp/avatar") //writes uploaded avatar to /tmp/avatar
-			}
-			render.plain("ok").toFuture
-		}
-
-		/**
-		 * Rendering views
-		 *
-		 * curl http://localhost:7070/posts
-		 */
-		class AnView extends View {
-			val template = "an_view.mustache"
-			val some_val = "random value here"
-		}
-
-		get("/template") { request =>
-			val anView = new AnView
-			render.view(anView).toFuture
-		}
+		
 
 
 		/**
@@ -387,35 +387,6 @@ object App {
 			render.status(404).plain("not found yo").toFuture
 		}
 
-
-		/**
-		 * Dispatch based on Content-Type
-		 *
-		 * curl http://localhost:7070/index.json
-		 * curl http://localhost:7070/index.html
-		 */
-		get("/blog/index.:format") { request =>
-			respondTo(request) {
-				case _:Html => render.html("<h1>Hello</h1>").toFuture
-				case _:Json => render.json(Map("value" -> "hello")).toFuture
-			}
-		}
-
-		/**
-		 * Also works without :format route using browser Accept header
-		 *
-		 * curl -H "Accept: text/html" http://localhost:7070/another/page
-		 * curl -H "Accept: application/json" http://localhost:7070/another/page
-		 * curl -H "Accept: foo/bar" http://localhost:7070/another/page
-		 */
-
-		get("/another/page") { request =>
-			respondTo(request) {
-				case _:Html => render.plain("an html response").toFuture
-				case _:Json => render.plain("an json response").toFuture
-				case _:All => render.plain("default fallback response").toFuture
-			}
-		}
 	}
 
 	val dbSession = new DatabaseSessionService
