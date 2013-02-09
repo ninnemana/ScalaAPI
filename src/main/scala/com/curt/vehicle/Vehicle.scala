@@ -170,6 +170,12 @@ class Vehicle(year:Int, make:String, model:String, submodel:String, config: List
 			val configAttr = new ConfigAttributeTypes
 			sender ! configAttr.get(year,make,model,submodel,config)
 		}
+		case "parts" => {
+			sender ! List[Int]()
+		}
+		case "groups" => {
+		  sender ! List[Int]()
+		}
 		case _ => println("shit we missed")
 	}
 }

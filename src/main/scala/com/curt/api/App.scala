@@ -239,14 +239,24 @@ object App {
 			val model = request.routeParams.getOrElse("model","")
 
 			val system = ActorSystem("VehicleSystem")
-			val vehicleActor = system.actorOf(Props(new Vehicle(year,make,model)), name = "vehicleActor")
-
 			implicit val timeout = Timeout(5 seconds)
-			val future = vehicleActor ? "submodels"
-			val submodels = Await.result(future,timeout.duration).asInstanceOf[List[String]]
 			
-			val parts = List[Int]()
-			val groups = List[Int]()
+			// Create our actor for getting the submodels, parts, and groups
+			val subActor = system.actorOf(Props(new Vehicle(year,make,model)), name = "subActor")
+			val partActor = system.actorOf(Props(new Vehicle(year,make,model)), name = "partActor")
+			val groupActor = system.actorOf(Props(new Vehicle(year,make,model)), name = "groupActor")
+			
+			// Curtains up for our actors
+			val subFuture = subActor ? "submodels"
+			val partFuture = partActor ? "parts"
+			val groupFuture = groupActor ? "groups"
+			
+			// And we're impressed
+			val submodels = Await.result(subFuture,timeout.duration).asInstanceOf[List[String]]
+			val parts = Await.result(partFuture,timeout.duration).asInstanceOf[List[Int]]
+			val groups = Await.result(groupFuture,timeout.duration).asInstanceOf[List[Int]]
+			
+			// Render our response based on "Accept" Header
 			respondTo(request){
 				case _:Json => {
 					render.json(Map(
@@ -292,14 +302,20 @@ object App {
 			val submodel = request.routeParams.getOrElse("submodel","")
 			
 			val system = ActorSystem("VehicleSystem")
-			val vehicleActor = system.actorOf(Props(new Vehicle(year,make,model,submodel)), name = "vehicleActor")
-
 			implicit val timeout = Timeout(5 seconds)
-			val future = vehicleActor ? "config"
-			val options = Await.result(future,timeout.duration).asInstanceOf[Tuple2[String,List[String]]]
-
-			val parts = List[Int]()
-			val groups = List[Int]()
+			
+			val configActor = system.actorOf(Props(new Vehicle(year,make,model,submodel)), name = "configActor")
+			val partActor = system.actorOf(Props(new Vehicle(year,make,model,submodel)), name = "partActor")
+			val groupActor = system.actorOf(Props(new Vehicle(year,make,model,submodel)), name = "groupActor")
+			
+				
+			val configFuture = configActor ? "config"
+			val partFuture = partActor ? "parts"
+			val groupFuture = groupActor ? "groups"
+			
+			val options = Await.result(configFuture,timeout.duration).asInstanceOf[Tuple2[String,List[String]]]
+			val parts = Await.result(partFuture,timeout.duration).asInstanceOf[List[Int]]
+			val groups = Await.result(groupFuture,timeout.duration).asInstanceOf[List[Int]]
 			respondTo(request){
 				case _:Json => {
 					render.json(Map(
@@ -348,16 +364,21 @@ object App {
 			
 			val config = URLDecoder.decode(encoded_config).split("/").toList
 
-			println(config)
 			val system = ActorSystem("VehicleSystem")
-			val vehicleActor = system.actorOf(Props(new Vehicle(year,make,model,submodel,config)), name = "vehicleActor")
-
 			implicit val timeout = Timeout(5 seconds)
-			val future = vehicleActor ? "config"
-			val options = Await.result(future,timeout.duration).asInstanceOf[Tuple2[String,List[String]]]
-
-			val parts = List[Int]()
-			val groups = List[Int]()
+			
+			val configActor = system.actorOf(Props(new Vehicle(year,make,model,submodel, config)), name = "configActor")
+			val partActor = system.actorOf(Props(new Vehicle(year,make,model,submodel, config)), name = "partActor")
+			val groupActor = system.actorOf(Props(new Vehicle(year,make,model,submodel, config)), name = "groupActor")
+			
+				
+			val configFuture = configActor ? "config"
+			val partFuture = partActor ? "parts"
+			val groupFuture = groupActor ? "groups"
+			
+			val options = Await.result(configFuture,timeout.duration).asInstanceOf[Tuple2[String,List[String]]]
+			val parts = Await.result(partFuture,timeout.duration).asInstanceOf[List[Int]]
+			val groups = Await.result(groupFuture,timeout.duration).asInstanceOf[List[Int]]
 			respondTo(request){
 				case _:Json => {
 					render.json(Map(
