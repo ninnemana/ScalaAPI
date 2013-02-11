@@ -6,6 +6,7 @@ import org.squeryl.{Schema, KeyedEntity, SessionFactory, Session, Query,Queryabl
 import org.squeryl.annotations.Column
 import org.squeryl.PrimitiveTypeMode._
 import com.curt.database.Database
+import com.curt.part._
 import akka.actor._
 import akka.dispatch.Await
 import akka.dispatch.Future
@@ -139,6 +140,13 @@ class ConfigAttributeTypes(val ID: Int, val name: String, val AcesTypeID: Int, v
 class VehicleConfigAttributes(val ID: Int, val AttributeID: Int, val VehicleConfigID: Int)
 class VehicleConfigs(val ID: Int, val AAIAVehicleConfigID: Int)
 
+class VehicleAttribute(k:String, v:String) {
+	def this() = this("","")
+	def this(t:String) = this(t,"")
+	  
+	var key:String = ""
+	var value:String = ""
+}
 
 class Vehicle(year:Int, make:String, model:String, submodel:String, config: List[String]) extends Actor{
 
@@ -167,17 +175,41 @@ class Vehicle(year:Int, make:String, model:String, submodel:String, config: List
 			sender ! models.get_submodels(year,make,model)
 		}
 		case "config" => {
+
 			val configAttr = new ConfigAttributeTypes
 			sender ! configAttr.get(year,make,model,submodel,config)
 		}
 		case "parts" => {
-			sender ! List[Int]()
+
+			val system = ActorSystem("VehicleSystem")
+			implicit val timeout = Timeout(5 seconds)
+			
+			// Create our actor for getting the submodels, parts, and groups
+			val baseActor = system.actorOf(Props(new VehiclePart(year,make,model,submodel,config)), name = "baseActor")
+			val subActor = system.actorOf(Props(new VehiclePart(year,make,model,submodel)), name = "subActor")
+			val configActor = system.actorOf(Props(new VehiclePart(year,make,model,submodel,config)), name = "configActor")
+			
+			// Curtains up for our actors
+			val baseFuture = baseActor ? "base"
+			val subFuture = subActor ? "sub"
+			val configFuture = configActor ? "config"
+			
+			// And we're impressed
+			val baseParts = Await.result(baseFuture,timeout.duration).asInstanceOf[List[String]]
+			val subParts = Await.result(subFuture,timeout.duration).asInstanceOf[List[Int]]
+			val configParts = Await.result(configFuture,timeout.duration).asInstanceOf[List[Int]]
+			
+			val results:List[Any] = (baseParts ::: subParts ::: configParts).distinct
+			sender ! results
 		}
 		case "groups" => {
 		  sender ! List[Int]()
 		}
-		case _ => println("shit we missed")
+		case _ => {
+			sender ! List[Int]()
+		}
 	}
+
 }
 
 object CurtDev extends Schema {

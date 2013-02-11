@@ -185,7 +185,7 @@ object App {
 		 */
 		get("/vehicle/:year/:make"){ request =>
 			val year = request.routeParams.getOrElse("year","0").toInt
-			val make = request.routeParams.getOrElse("make","")
+			val make = URLDecoder.decode(request.routeParams.getOrElse("make",""))
 			
 			val system = ActorSystem("VehicleSystem")
 			val vehicleActor = system.actorOf(Props(new Vehicle(year,make)), name = "vehicleActor")
@@ -235,9 +235,9 @@ object App {
 		 */
 		get("/vehicle/:year/:make/:model"){ request =>
 			val year = request.routeParams.getOrElse("year","0").toInt
-			val make = request.routeParams.getOrElse("make","")
-			val model = request.routeParams.getOrElse("model","")
-
+			val make = URLDecoder.decode(request.routeParams.getOrElse("make",""))
+			val model =  URLDecoder.decode(request.routeParams.getOrElse("model",""))
+			
 			val system = ActorSystem("VehicleSystem")
 			implicit val timeout = Timeout(5 seconds)
 			
@@ -296,10 +296,10 @@ object App {
 		 * @param key (required) - Public API Key
 		 */
 		get("/vehicle/:year/:make/:model/:submodel"){ request =>
-			val year = request.routeParams.getOrElse("year","0").toInt
-			val make = request.routeParams.getOrElse("make","")
-			val model = request.routeParams.getOrElse("model","")
-			val submodel = request.routeParams.getOrElse("submodel","")
+			val year 		= 	request.routeParams.getOrElse("year","0").toInt
+			val make 		=  	URLDecoder.decode(request.routeParams.getOrElse("make",""))
+			val model 		=  	URLDecoder.decode(request.routeParams.getOrElse("model",""))
+			val submodel 	=  	URLDecoder.decode(request.routeParams.getOrElse("submodel",""))
 			
 			val system = ActorSystem("VehicleSystem")
 			implicit val timeout = Timeout(5 seconds)
@@ -356,13 +356,11 @@ object App {
 		 * @param key (required) - Public API Key
 		 */
 		get("/vehicle/:year/:make/:model/:submodel/*"){ request =>
-			val year = request.routeParams.getOrElse("year","0").toInt
-			val make = request.routeParams.getOrElse("make","")
-			val model = request.routeParams.getOrElse("model","")
-			val submodel = request.routeParams.getOrElse("submodel","")
-			val encoded_config = request.routeParams.getOrElse("splat","")
-			
-			val config = URLDecoder.decode(encoded_config).split("/").toList
+			val year 		= 	request.routeParams.getOrElse("year","0").toInt
+			val make 		=  	URLDecoder.decode(request.routeParams.getOrElse("make",""))
+			val model 		=  	URLDecoder.decode(request.routeParams.getOrElse("model",""))
+			val submodel 	=  	URLDecoder.decode(request.routeParams.getOrElse("submodel",""))
+			val config 		= 	URLDecoder.decode(request.routeParams.getOrElse("splat","")).split("/").toList
 
 			val system = ActorSystem("VehicleSystem")
 			implicit val timeout = Timeout(5 seconds)
@@ -431,7 +429,6 @@ object App {
 		}
 
 		error { request =>
-			println(request.error)
 			request.error match {
 				case Some(e:ArithmeticException) =>
 					render.status(500).plain("whoops, divide by zero!").toFuture
