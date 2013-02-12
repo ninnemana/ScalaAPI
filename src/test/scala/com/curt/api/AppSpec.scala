@@ -9,8 +9,32 @@ class AppSpec extends SpecHelper {
 
   val app = new App.Api
 
-	"GET /vehicle?key=8aee0620-412e-47fc-900a-947820ea1c1d" should "respond JSON" in {
+	"GET /vehicle?key=8aee0620-412e-47fc-900a-947820ea1c1d" should "respond with years in JSON" in {
 	  get("/vehicle?key=8aee0620-412e-47fc-900a-947820ea1c1d", Map.empty, Map("Accept" -> "application/json"))
+	  response.body should not equal("not found yo")
+	  response.code should equal (200)
+  	}
+  
+  	"GET /vehicle/2012?key=8aee0620-412e-47fc-900a-947820ea1c1d" should "respond with makes in JSON" in {
+	  get("/vehicle/2012?key=8aee0620-412e-47fc-900a-947820ea1c1d", Map.empty, Map("Accept" -> "application/json"))
+	  response.body should not equal("not found yo")
+	  response.code should equal (200)
+  	}
+  	
+  	"GET /vehicle/2012/Audi?key=8aee0620-412e-47fc-900a-947820ea1c1d" should "respond with models in JSON" in {
+	  get("/vehicle/2012/Audi?key=8aee0620-412e-47fc-900a-947820ea1c1d", Map.empty, Map("Accept" -> "application/json"))
+	  response.body should not equal("not found yo")
+	  response.code should equal (200)
+  	}
+  	
+  	"GET /vehicle/2012/Audi/A5?key=8aee0620-412e-47fc-900a-947820ea1c1d" should "respond with submodels, parts and groups in JSON" in {
+	  get("/vehicle/2012/Audi/A5?key=8aee0620-412e-47fc-900a-947820ea1c1d", Map.empty, Map("Accept" -> "application/json"))
+	  response.body should not equal("not found yo")
+	  response.code should equal (200)
+  	}
+  	
+  	"GET /vehicle/2012/Audi/A5/Cabriolet?key=8aee0620-412e-47fc-900a-947820ea1c1d" should "respond with config, parts and groups in JSON" in {
+	  get("/vehicle/2012/Audi/A5/Cabriolet?key=8aee0620-412e-47fc-900a-947820ea1c1d", Map.empty, Map("Accept" -> "application/json"))
 	  response.body should not equal("not found yo")
 	  response.code should equal (200)
   	}

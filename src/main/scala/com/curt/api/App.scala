@@ -5,6 +5,8 @@ import com.twitter.finatra.ContentType._
 import com.twitter.finagle.{Service, SimpleFilter}
 import com.twitter.finagle.http._
 import com.twitter.finagle.http.{Request, Response}
+//import com.twitter.finagle.http.filter.JsonpFilter
+import com.twitter.finagle.http.filter._
 import com.twitter.util.Future
 import scala.util.DynamicVariable
 import org.squeryl.{Session, SessionFactory}
@@ -67,6 +69,17 @@ object App {
 			  }
 			}
 		}
+	}
+	
+	class JsonpFilter[REQUEST <: Request] extends SimpleFilter[REQUEST, Response] {
+	  def apply(request: REQUEST, service: Service[REQUEST, Response]): com.twitter.util.Future[Response] = {
+	    service(request) onSuccess { response =>
+	      if(response.mediaType == Some(MediaType.Json)) {
+	        response.content = response.getContent
+	        response.mediaType = MediaType.Javascript
+	      }
+	    }
+	  }
 	}
   
 	
@@ -455,12 +468,18 @@ object App {
 
 	val dbSession = new DatabaseSessionService
 	val authorized = new Authorize
+	val cors = new AddResponseHeadersFilter(Map(
+	    "Access-Control-Allow-Origin"  -> "*",
+	    "Access-Control-Allow-Methods" -> "GET",
+	    "Access-Control-Allow-Headers" -> "*"))
 	val app = new Api
+	
 
 	def main(args: Array[String]) = {
 		FinatraServer.register(app)
 		FinatraServer.addFilter(dbSession)
 		FinatraServer.addFilter(authorized)
+		FinatraServer.addFilter(cors)
 		FinatraServer.start()
 	}
 }
