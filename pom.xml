@@ -237,4 +237,11 @@
 	</pluginManagement>
 
   </build>
+  <distributionManagement>
+      <repository>
+          <id>curtoss</id>
+          <name>CurtBuntu</name>
+          <url>scp://curtoss.cloudapp.net</url>
+      </repository>
+  </distributionManagement>
 </project>
