@@ -5,7 +5,8 @@ import com.twitter.finatra.ContentType._
 import com.twitter.finagle.{Service, SimpleFilter}
 import com.twitter.finagle.http._
 import com.twitter.finagle.http.{Request, Response}
-//import com.twitter.finagle.http.filter.JsonpFilter
+import com.twitter.finagle.http.path._
+import com.twitter.finagle.http.Method.{Get => GET}
 import com.twitter.finagle.http.filter._
 import com.twitter.util.Future
 import scala.util.DynamicVariable
@@ -22,6 +23,7 @@ import akka.util.duration._
 import akka.japi.Creator
 import text.Document
 import java.net.URLDecoder
+import com.twitter.finagle.http.filter.CorsFilter$
 
 object App {
 
@@ -47,8 +49,15 @@ object App {
 	 */
 	class Authorize extends SimpleFilter[Request, Response] {
 		def apply(request: Request, continue: Service[Request, Response]) = {
-			try{
-				// Try and retrieve an API from the Query String
+		  try{
+		    request.method -> Path(request.path) match {
+		      case GET -> Root / "unauthorized" =>
+		        continue(request)
+		        
+		      case GET -> Root / "favicon.ico" =>
+		        continue(request)
+		      case _ => {
+		        // Try and retrieve an API from the Query String
 				var key = Option(request.getParam("key", ""))
 				
                 key match {
@@ -61,25 +70,15 @@ object App {
 				  }
                 }
 				continue(request)
-				
-			} catch {
-			  case _ => {
-				  	val req = com.twitter.finagle.http.Request
-					continue(req.apply("/unauthorized"))
-			  }
-			}
+		      }
+		    }
+		  }catch{
+		    case _ => {
+		    	val req = com.twitter.finagle.http.Request
+		    	continue(req.apply("/unauthorized"))
+		    }
+		  }
 		}
-	}
-	
-	class JsonpFilter[REQUEST <: Request] extends SimpleFilter[REQUEST, Response] {
-	  def apply(request: REQUEST, service: Service[REQUEST, Response]): com.twitter.util.Future[Response] = {
-	    service(request) onSuccess { response =>
-	      if(response.mediaType == Some(MediaType.Json)) {
-	        response.content = response.getContent
-	        response.mediaType = MediaType.Javascript
-	      }
-	    }
-	  }
 	}
   
 	
@@ -126,6 +125,7 @@ object App {
 									("Groups", groups))))).toFuture
 				}
 				case _:All => {
+					request.setContentTypeJson()
 					render.json(Map(
 							("ConfigOption", 
 								Map(
@@ -468,18 +468,16 @@ object App {
 
 	val dbSession = new DatabaseSessionService
 	val authorized = new Authorize
-	val cors = new AddResponseHeadersFilter(Map(
-	    "Access-Control-Allow-Origin"  -> "*",
-	    "Access-Control-Allow-Methods" -> "GET",
-	    "Access-Control-Allow-Headers" -> "*"))
+	val jsonp = com.twitter.finagle.http.filter.JsonpFilter
 	val app = new Api
 	
 
 	def main(args: Array[String]) = {
+		println("starting server")
 		FinatraServer.register(app)
 		FinatraServer.addFilter(dbSession)
 		FinatraServer.addFilter(authorized)
-		FinatraServer.addFilter(cors)
+		FinatraServer.addFilter(jsonp)
 		FinatraServer.start()
 	}
 }
